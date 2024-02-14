@@ -1,7 +1,8 @@
 CREATE  TABLE clientes (
 	id SERIAL PRIMARY KEY,
 	nome VARCHAR(50) NOT NULL,
-	limite INTEGER NOT NULL
+	limite INTEGER NOT NULL,
+    saldo INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE  TABLE transacoes (
@@ -15,13 +16,6 @@ CREATE  TABLE transacoes (
 		FOREIGN KEY (cliente_id) REFERENCES clientes(id)
 );
 
-CREATE  TABLE saldos (
-	id SERIAL PRIMARY KEY,
-	cliente_id INTEGER NOT NULL,
-	valor INTEGER NOT NULL,
-	CONSTRAINT fk_clientes_saldos_id
-		FOREIGN KEY (cliente_id) REFERENCES clientes(id)
-);
 
 DO $$
 BEGIN
@@ -33,7 +27,5 @@ BEGIN
 		('padaria joia de cocaia', 100000 * 100),
 		('kid mais', 5000 * 100);
 	
-	INSERT INTO saldos (cliente_id, valor)
-		SELECT id, 0 FROM clientes;
 END;
 $$;
