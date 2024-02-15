@@ -71,22 +71,23 @@ func Th(ctx echo.Context) error {
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
-		// return ctx.NoContent(http.StatusUnprocessableEntity)
+		// return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return ctx.NoContent(http.StatusUnprocessableEntity)
 	}
 	if err := ctx.Bind(&tr); err != nil {
-		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
-		// return ctx.NoContent(http.StatusUnprocessableEntity)
+		// return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return ctx.NoContent(http.StatusUnprocessableEntity)
 	}
 
 	if err := ctx.Validate(tr); err != nil {
-		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
-		// return ctx.NoContent(http.StatusUnprocessableEntity)
+		// return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return ctx.NoContent(http.StatusUnprocessableEntity)
 	}
 
 	client, err := repo.Gc(id, dbConn)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, err.Error())
+		// return ctx.JSON(http.StatusInternalServerError, err.Error())
+		return ctx.NoContent(http.StatusInternalServerError)
 	}
 
 	if client == nil {
@@ -107,8 +108,8 @@ func Th(ctx echo.Context) error {
 		case "le":
 			return ctx.NoContent(http.StatusUnprocessableEntity)
 		default:
-			return ctx.JSON(http.StatusInternalServerError, err.Error())
-			// return ctx.NoContent(http.StatusInternalServerError)
+			// return ctx.JSON(http.StatusInternalServerError, err.Error())
+			return ctx.NoContent(http.StatusInternalServerError)
 
 		}
 	}
@@ -132,8 +133,8 @@ func Eh(ctx echo.Context) error {
 
 	ext, err := repo.Ex(id, dbConn)
 	if err != nil {
-		return ctx.JSON(http.StatusNotFound, err.Error())
-		// return ctx.NoContent(http.StatusNotFound)
+		// return ctx.JSON(http.StatusNotFound, err.Error())
+		return ctx.NoContent(http.StatusNotFound)
 	}
 	return ctx.JSON(http.StatusOK, ext)
 }

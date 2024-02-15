@@ -67,7 +67,6 @@ func Gc(id int, dbConn *pgxpool.Pool) (*Client, error) {
 func Tb(t *Transaction, client_id int, dbConn *pgxpool.Pool) (*RespT, error) {
 	tx, err := dbConn.Begin(context.Background())
 	if err != nil {
-		log.Print("	tx, err := dbConn.Begin(context.Background())")
 		return &RespT{}, err
 	}
 
@@ -79,7 +78,6 @@ func Tb(t *Transaction, client_id int, dbConn *pgxpool.Pool) (*RespT, error) {
 
 	err = tx.QueryRow(context.Background(), query, client_id).Scan(&limit, &balance)
 	if err != nil {
-		log.Print("err = tx.QueryRow(context.Background(), query, id).Scan(&limit, &balance)")
 		return nil, err
 	}
 
@@ -97,47 +95,25 @@ func Tb(t *Transaction, client_id int, dbConn *pgxpool.Pool) (*RespT, error) {
 
 	query2 := `INSERT INTO transacoes (cliente_id, valor, tipo, descricao, realizada_em) VALUES($1, $2, $3, $4,$5)`
 
+	log.Print(client_id)
 	batch := &pgx.Batch{}
 	batch.Queue(query2, client_id, t.Value, t.Typ, t.Description, t.Created_at)
 	batch.Queue("UPDATE clientes SET saldo=$1 WHERE id=$2", newBalance, client_id)
 	br := tx.SendBatch(context.Background(), batch)
 	_, err = br.Exec()
 	if err != nil {
-
-		log.Print("	br := tx.SendBatch(context.Background(), batch)")
 		return &RespT{}, err
 	}
 
 	err = br.Close()
 	if err != nil {
-		log.Print("	err = br.Close()	")
 		return &RespT{}, err
 	}
 
 	err = tx.Commit(context.Background())
 	if err != nil {
-		log.Print("	err = tx.Commit(context.Background())")
 		return &RespT{}, err
 	}
-	// _, err = tx.Exec(query2, cliente_id, t.Value, t.Typ, t.Description, t.Created_at)
-	// if err != nil {
-	// 	_ = tx.Rollback()
-	// 	return nil, err
-	// }
-
-	// _, err = tx.Exec()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// _, err = tx.Exec()
-	// if err != nil {
-	// 	_ = tx.Rollback()
-	// 	return nil, err
-	// }
-
-	// if err := tx.Commit(); err != nil {
-	// 	return nil, err
-	// }
 	r := RespT{
 		Limit:   limit,
 		Balance: newBalance,
@@ -148,78 +124,8 @@ func Tb(t *Transaction, client_id int, dbConn *pgxpool.Pool) (*RespT, error) {
 	return &r, nil
 }
 
-// func Tb(t *Transaction, clientId int, dbConn *pgxpool.Pool) (*RespT, error) {
-// 	tx, err := dbConn.Begin(context.Background())
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	log.Print("passei 1")
-
-// 	defer tx.Rollback(context.Background())
-
-// 	query := `SELECT  clientes.id, clientes.limite , saldos.valor
-//     FROM clientes JOIN saldos ON saldos.cliente_id = clientes.id
-//     WHERE clientes.id = $1`
-
-// 	client := new(Client)
-
-// 	err = tx.QueryRow(context.Background(), query, clientId).Scan(&client.Id, &client.Limit, &client.Balance)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	log.Print("passei 2")
-
-// 	var newAccountBalance int
-
-// 	if t.Typ == "d" {
-// 		newAccountBalance = client.Balance - t.Value
-// 	} else {
-// 		newAccountBalance = client.Balance + t.Value
-// 	}
-
-// 	if (client.Limit + newAccountBalance) < 0 {
-// 		return nil, fmt.Errorf("le")
-// 	}
-// 	log.Print("passei 3")
-
-// 	batch := &pgx.Batch{}
-// 	batch.Queue("INSERT INTO transactions(client_id,amount,operation,description) values ($1, $2, $3, $4, $5)", clientId, t.Value, t.Typ, t.Description, t.Created_at)
-// 	batch.Queue("UPDATE saldos SET balance = $1 WHERE cliente_id = $2", newAccountBalance, clientId)
-// 	br := tx.SendBatch(context.Background(), batch)
-// 	_, err = br.Exec()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	log.Print("passei 4")
-
-// 	err = br.Close()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	log.Print("passei 5")
-// 	err = tx.Commit(context.Background())
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	log.Print("passei 6")
-
-// 	result := RespT{
-// 		Limit:   client.Limit,
-// 		Balance: newAccountBalance,
-// 	}
-
-// 	return &result, nil
-// }
-
 func Ex(id int, dbConn *pgxpool.Pool) (*Ext, error) {
-	// var limit int
-	// var balance int
-
-	query := `SELECT  saldo, now(),limite 
-    FROM clientes WHERE id = $1`
-
-	log.Print("comecou ex ")
+	query := `SELECT  saldo, now(),limite FROM clientes WHERE id = $1`
 
 	rows, _ := dbConn.Query(context.Background(), query, id)
 	bE, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[BalanceE])
@@ -227,38 +133,20 @@ func Ex(id int, dbConn *pgxpool.Pool) (*Ext, error) {
 		return nil, err
 	}
 
-	log.Print("passei 1")
-	query2 := `SELECT valor, tipo, descricao, realizada_em FROM transacoes WHERE id=$1  ORDER BY id  DESC LIMIT 10`
+	query2 := `SELECT valor, tipo, descricao, realizada_em FROM transacoes WHERE cliente_id=$1 ORDER BY realizada_em DESC LIMIT 10`
+
+	log.Print(id)
 
 	rows, _ = dbConn.Query(context.Background(), query2, id)
 	lastTransactions, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Transaction])
+	log.Print(lastTransactions)
 	if err != nil {
 		return nil, err
 	}
-	log.Print("passei 2")
 	e := Ext{
 		Balance:         bE,
-		LastTransaction: lastTransactions,
+		LastTransaction: []Transaction{},
 	}
-
-	// rows, err := dbConn.Query(context.Background(), query2, id)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if rows != nil {
-	// 	for rows.Next() {
-
-	// 		var trans Transaction
-
-	// 		err := rows.Scan(&trans.Value, &trans.Typ, &trans.Description, &trans.Created_at)
-	// 		if err != nil {
-	// 			return nil, err
-	//
-	// 		e.LastTransaction = append(e.LastTransaction, trans)
-	// 	}
-
-	// 	rows.Close()
-	// }
+	e.LastTransaction = append(e.LastTransaction, lastTransactions...)
 	return &e, nil
 }
