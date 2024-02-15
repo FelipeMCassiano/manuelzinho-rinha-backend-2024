@@ -1,5 +1,5 @@
-# Submissão Felipe Cassiano Rinha Backend 2024/01
-[manuelzinho](https://github.com/FelipeMCassiano/manuelzinho-rinha-backend-2024) carinhosamente apelidado pelo meu Avô, é uma versão simples feita em golang e postgres juntamente do framework Echo e a lib pgx
+#  Rinha Backend 2024/01
+manuelzinho carinhosamente apelidado pelo meu Avô, é uma versão simples feita em golang e postgres juntamente do framework Echo e a lib pgx
 
 ## Stack
 ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
