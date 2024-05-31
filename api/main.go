@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -40,7 +41,9 @@ func main() {
 	}
 	dbConn = conn
 
-	r.Logger.Fatal(r.Start(":3000"))
+	port := fmt.Sprintf(":%s", os.Getenv("APP_PORT"))
+
+	r.Logger.Fatal(r.Start(port))
 }
 
 type TR struct {
